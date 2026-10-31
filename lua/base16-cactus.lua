@@ -9,7 +9,7 @@ require('mini.base16').setup({
   },
 })
 
-vim.g.colors_name = "cactusbuddy"
+vim.g.colors_name = "base16-cactus"
 
 local highlights = {
   -- Palette roles (custom colors and styles)

@@ -1,6 +1,6 @@
-# Cactusbuddy
+# base16-cactus
 
-A plain succulent 256-color theme using [mini.base16].
+A plain succulent 256-color colorscheme built on [mini.base16].
 
 [mini.base16]: https://github.com/echasnovski/mini.base16
 
@@ -28,7 +28,7 @@ Tig configuration for the theme can be found in [the gist][tigrc].
 
 ```lua
 {
-  'redbug312/cactusbuddy',
+  'ardeagulps/base16-cactus',
   lazy = false,
   priority = 1000,
   dependencies = {
@@ -36,7 +36,7 @@ Tig configuration for the theme can be found in [the gist][tigrc].
     'echasnovski/mini.statusline', -- Optional: if you want statusline support
   },
   config = function()
-    vim.cmd('colorscheme cactusbuddy')
+    vim.cmd('colorscheme base16-cactus')
   end,
 }
 ```
@@ -45,13 +45,13 @@ Tig configuration for the theme can be found in [the gist][tigrc].
 
 ```lua
 use {
-  'redbug312/cactusbuddy',
+  'ardeagulps/base16-cactus',
   requires = {
     'echasnovski/mini.base16',
     'echasnovski/mini.statusline', -- Optional: if you want statusline support
   },
   config = function()
-    vim.cmd('colorscheme cactusbuddy')
+    vim.cmd('colorscheme base16-cactus')
   end,
 }
 ```
@@ -61,10 +61,10 @@ use {
 ```vim
 Plug 'echasnovski/mini.base16'
 Plug 'echasnovski/mini.statusline' " Optional: if you want statusline support
-Plug 'redbug312/cactusbuddy'
+Plug 'ardeagulps/base16-cactus'
 
 " After plug#end()
-colorscheme cactusbuddy
+colorscheme base16-cactus
 ```
 
 ## Use with [mini.statusline]

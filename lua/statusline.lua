@@ -1,5 +1,5 @@
 local has_statusline, statusline = pcall(require, "mini.statusline")
-if not has_statusline or vim.g.cactusbuddy_statusline_enabled == false then
+if not has_statusline or vim.g.base16_cactus_statusline_enabled == false then
   return
 end
 
