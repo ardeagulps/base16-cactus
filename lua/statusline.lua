@@ -5,28 +5,30 @@ end
 
 local palette = require('palette')
 
-local hl = function(group, opts)
+local highlights = {
+  -- Mode
+  MiniStatuslineModeCommand = { fg = palette.base06, bg = palette.base01, bold = true },
+  MiniStatuslineModeInsert  = { fg = palette.base0C, bg = palette.base01, bold = true },
+  MiniStatuslineModeNormal  = { fg = palette.base07, bg = palette.base01, bold = true },
+  MiniStatuslineModeOther   = { fg = palette.base0D, bg = palette.base01, bold = true },
+  MiniStatuslineModeReplace = { fg = palette.base08, bg = palette.base01, bold = true },
+  MiniStatuslineModeVisual  = { fg = palette.base0E, bg = palette.base01, bold = true },
+
+  -- Diagnostics
+  MiniStatuslineDiagnosticError   = { fg = palette.base08, bg = palette.base01 },
+  MiniStatuslineDiagnosticHint    = { fg = palette.base05, bg = palette.base01 },
+  MiniStatuslineDiagnosticInfo    = { fg = palette.base06, bg = palette.base01 },
+  MiniStatuslineDiagnosticWarning = { fg = palette.base09, bg = palette.base01 },
+
+  -- General
+  MiniStatuslineFilename = { fg = palette.base07, bg = palette.base01 },
+  MiniStatuslineFileinfo = { fg = palette.base06, bg = palette.base01 },
+  MiniStatuslineInactive = { fg = palette.base04, bg = palette.base01 },
+}
+
+for group, opts in pairs(highlights) do
   vim.api.nvim_set_hl(0, group, opts)
 end
-
--- Setup mode highlight groups
-hl('MiniStatuslineModeNormal',  { fg = palette.base07, bg = palette.base01, bold = true })
-hl('MiniStatuslineModeInsert',  { fg = palette.base0C, bg = palette.base01, bold = true })
-hl('MiniStatuslineModeVisual',  { fg = palette.base0E, bg = palette.base01, bold = true })
-hl('MiniStatuslineModeReplace', { fg = palette.base08, bg = palette.base01, bold = true })
-hl('MiniStatuslineModeCommand', { fg = palette.base06, bg = palette.base01, bold = true })
-hl('MiniStatuslineModeOther',   { fg = palette.base0D, bg = palette.base01, bold = true })
-
--- Diagnostic highlights
-hl('MiniStatuslineDiagnosticError', { fg = palette.base08, bg = palette.base01 })
-hl('MiniStatuslineDiagnosticWarning', { fg = palette.base09, bg = palette.base01 })
-hl('MiniStatuslineDiagnosticInfo', { fg = palette.base06, bg = palette.base01 })
-hl('MiniStatuslineDiagnosticHint', { fg = palette.base05, bg = palette.base01 })
-
--- General highlights
-hl('MiniStatuslineFilename', { fg = palette.base07, bg = palette.base01 })
-hl('MiniStatuslineFileinfo', { fg = palette.base06, bg = palette.base01 })
-hl('MiniStatuslineInactive', { fg = palette.base04, bg = palette.base01 })
 
 local function section_paste()
   return vim.o.paste and 'PASTE' or ''
