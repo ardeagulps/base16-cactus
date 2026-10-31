@@ -1,198 +1,173 @@
-local colorbuddy = require('colorbuddy')
+local palette = require('palette')
 
-colorbuddy.colorscheme("cactusbuddy")
+-- Setup mini.base16
+require('mini.base16').setup({
+  palette = palette,
+  use_cterm = true,
+  plugins = {
+    default = true,
+  },
+})
 
-local Color = colorbuddy.Color
-local Group = colorbuddy.Group
-local c = colorbuddy.colors
-local g = colorbuddy.groups
-local s = colorbuddy.styles
+vim.g.colors_name = "cactusbuddy"
 
-local palette = {
-  white   = { gui='#bcbcbc', cterm=250 },
-  grey    = { gui='#949494', cterm=246 },
-  dark    = { gui='#767676', cterm=243 },
-  darker  = { gui='#585858', cterm=240 },
-  darkest = { gui='#444444', cterm=238 },
-  base    = { gui='#262626', cterm=235 },
-  black   = { gui='#1c1c1c', cterm=234 },
-  backgnd = { gui='#121212', cterm=233 },
-
-  cactus  = { gui='#5f875f', cterm=065 }, -- darkgreen
-  grass   = { gui='#87af87', cterm=108 }, -- limegreen
-  fruit   = { gui='#d787af', cterm=175 }, -- coralpink
-  brick   = { gui='#875f5f', cterm=095 }, -- brickpink
-  purple  = { gui='#8787af', cterm=103 },
-  cyan    = { gui='#87afd7', cterm=110 },
-  red     = { gui='#d75f5f', cterm=167 },
-  orange  = { gui='#d7875f', cterm=173 },
-  brown   = { gui='#af875f', cterm=137 },
-  blue    = { gui='#5f87af', cterm=067 },
-}
-
--- initialize all colors from palette
-for key, value in pairs(palette) do
-  Color.new(key, value.gui)
+-- Helper to set custom overrides
+local hl = function(group, opts)
+  vim.api.nvim_set_hl(0, group, opts)
 end
 
--- EDITOR BASICS
+-- ==============================================================================
+-- CUSTOM OVERRIDES (SPECIFIC COLORS/STYLES)
+-- ==============================================================================
 
-Group.new('Header',       c.white,   c.none,  s.none)
-Group.new('Normal',       c.grey,    c.none,  s.none)
-Group.new('Noise',        c.dark,    c.none,  s.none)
-Group.new('Comment',      c.darker,  c.none,  s.none)
-Group.new('NonText',      c.darkest, c.none,  s.none)
+hl('Normal',       { fg = palette.base06, bg = palette.base00 })
+hl('Header',       { fg = palette.base07 })
+hl('Noise',        { fg = palette.base05 })
+hl('Comment',      { fg = palette.base04 })
+hl('LspInlayHint', { fg = palette.base03 })
+hl('Special',      { fg = palette.base0E })
+hl('Number',       { fg = palette.base0C })
+hl('Title',        { fg = palette.base0D })
+hl('Todo',         { fg = palette.base0F })
+hl('Error',        { fg = palette.base08 })
+hl('Warning',      { fg = palette.base09 })
 
-Group.new('Error',        c.red,     c.none,  s.none)
-Group.new('Number',       c.grass,   c.none,  s.none)
-Group.new('Special',      c.purple,  c.none,  s.none)
-Group.new('String',       c.cactus,  c.none,  s.none)
-Group.new('Title',        c.cyan,    c.none,  s.none)
-Group.new('Todo',         c.fruit,   c.none,  s.none)
-Group.new('User1',        c.brown,   c.none,  s.none)
-Group.new('User2',        c.blue,    c.none,  s.none)
-Group.new('User3',        c.brick,   c.none,  s.none)
-Group.new('Warning',      c.orange,  c.none,  s.none)
+hl('User1',        { fg = palette.base0A })
+hl('User2',        { fg = palette.base0D })
+hl('User3',        { fg = palette.base08 })
 
-Group.new('Added',        c.cactus,  c.none,  s.none)
-Group.new('Changed',      c.brown,   c.none,  s.none)
-Group.new('Removed',      c.brick,   c.none,  s.none)
+hl('StatusLine',   { bg = palette.base01 })
+hl('StatusLineNC', { fg = palette.base04, bg = palette.base01 })
 
-Group.new('DiffAdd',      c.cactus,  c.none,  s.none)
-Group.new('DiffChange',   c.brown,   c.none,  s.none)
-Group.new('DiffDelete',   c.brick,   c.none,  s.none)
-Group.new('DiffLine',     c.darker,  c.none,  s.underline)
-Group.new('DiffText',     c.brown,   c.none,  s.none)
+hl('Search',       { fg = palette.base0F, underline = true })
+hl('CurSearch',    { fg = palette.base00, bg = palette.base0F, underline = true, sp = palette.base0F })
+hl('IncSearch',    { link = 'CurSearch' })
 
-Group.new('SpellBad',     c.red,     c.none,  s.undercurl)
-Group.new('SpellCap',     c.orange,  c.none,  s.undercurl)
-Group.new('SpellLocal',   c.brown,   c.none,  s.undercurl)
-Group.new('SpellRare',    c.blue,    c.none,  s.undercurl)
+hl('MatchParen',   { fg = palette.base0D })
 
-Group.new('CurSearch',    c.fruit,   c.none,  s.underline)
-Group.new('IncSearch',    c.fruit,   c.none,  s.underline)
-Group.new('MatchParen',   c.cyan,    c.none,  s.none)
-Group.new('Pmenu',        c.darker,  c.black, s.none)
-Group.new('PmenuSel',     c.grey,    c.black, s.none)
-Group.new('PmenuThumb',   c.brown,   c.black, s.none)  -- not sure what this is
-Group.new('Search',       c.fruit,   c.none,  s.underline)
-Group.new('StatusLine',   c.none,    c.black, s.none)
-Group.new('StatusLineNC', c.black,   c.black, s.none)
-Group.new('Visual',       c.none,    c.base,  s.none)
-Group.new('VisualNOS',    c.none,    c.base,  s.none)
-Group.new('WildMenu',     c.fruit,   c.base,  s.none)
+hl('DiagnosticUnderlineError', { underline = true, sp = palette.base08 })
+hl('DiagnosticUnderlineWarn',  { underline = true, sp = palette.base09 })
+hl('DiagnosticUnderlineHint',  { underline = true })
+hl('DiagnosticUnderlineInfo',  { underline = true })
 
--- LINKS
+-- ==============================================================================
+-- HIGHLIGHT LINK OVERRIDES
+-- ==============================================================================
 
-Group.link('Constant',          g.Normal)
-Group.link('Delimiter',         g.Normal)
-Group.link('Function',          g.Normal)
-Group.link('Identifier',        g.Normal)
-Group.link('Statement',         g.Normal)
-Group.link('Structure',         g.Noise)
-Group.link('Type',              g.Normal)
-Group.link('TypeDef',           g.Normal)
+-- Standard Syntax Links
+hl('Boolean',           { link = 'Number' })
+hl('Character',         { link = 'Number' })
+hl('Conditional',       { link = 'Noise' })
+hl('Constant',          { link = 'Normal' })
+hl('Debug',             { link = 'Todo' })
+hl('Delimiter',         { link = 'Normal' })
+hl('Directory',         { link = 'String' })
+hl('Exception',         { link = 'Noise' })
+hl('Function',          { link = 'Normal' })
+hl('Identifier',        { link = 'Normal' })
+hl('Include',           { link = 'Noise' })
+hl('Keyword',           { link = 'Noise' })
+hl('Label',             { link = 'User2' })
+hl('Macro',             { link = 'Noise' })
+hl('Operator',          { link = 'Noise' })
+hl('PreProc',           { link = 'Noise' })
+hl('Repeat',            { link = 'Noise' })
+hl('SpecialChar',       { link = 'Special' })
+hl('SpecialKey',        { link = 'Special' })
+hl('Statement',         { link = 'Normal' })
+hl('StorageClass',      { link = 'Noise' })
+hl('Structure',         { link = 'Noise' })
+hl('Tag',               { link = 'User2' })
+hl('Type',              { link = 'Normal' })
+hl('TypeDef',           { link = 'Normal' })
 
-Group.link('Conditional',       g.Noise)
-Group.link('Exception',         g.Noise)
-Group.link('Include',           g.Noise)
-Group.link('Keyword',           g.Noise)
-Group.link('Macro',             g.Noise)
-Group.link('Operator',          g.Noise)
-Group.link('PreProc',           g.Noise)
-Group.link('Repeat',            g.Noise)
-Group.link('StorageClass',      g.Noise)
+-- Language Specific Links
+hl('@constant.builtin', { link = 'User1' })
+hl('@constructor',      { link = 'Noise' })
+hl('@exception.operator', { link = 'Special' })
+hl('@keyword.storage',  { link = 'User2' })
+hl('@punctuation.special', { link = 'Normal' })
+hl('@variable',         { link = 'Normal' })
+hl('@variable.builtin', { link = 'String' })
+hl('@function.macro',   { link = 'Macro' })
+hl('@keyword.return',   { link = 'Noise' })
+hl('@namespace',        { link = 'Include' })
+hl('@number.float',     { link = 'Number' })
+hl('@self',             { link = 'String' })
+hl('@type.builtin',     { link = 'Include' })
+hl('@type.qualifier',   { link = 'Keyword' })
 
-Group.link('Boolean',           g.Number)
-Group.link('Character',         g.Number)
-Group.link('Debug',             g.Todo)
-Group.link('Directory',         g.String)
-Group.link('Label',             g.User2)
-Group.link('SpecialChar',       g.Special)
-Group.link('SpecialKey',        g.Special)
-Group.link('Tag',               g.User2)
+hl('rustCommentBlockDoc',   { link = 'Comment' })
+hl('rustCommentLineDoc',    { link = 'Comment' })
+hl('rustModPathSep',        { link = 'Include' })
+hl('rustSelf',              { link = 'String' })
+hl('rustEnumVariant',       { link = 'User1' })
 
-Group.link('@constant.builtin', g.User1)
-Group.link('@constructor',      g.Noise)
-Group.link('@exception.operator',     g.Special)
-Group.link('@function.macro',   g.Noise)
-Group.link('@namespace',        g.Noise)
-Group.link('@punctuation.special',    g.Normal)
-Group.link('@keyword.storage',  g.User2)
-Group.link('@type.builtin',     g.Normal)
-Group.link('@type.qualifier',   g.Noise)
-Group.link('@variable',         g.Normal)
-Group.link('@variable.builtin', g.String)
+-- UI Elements Links
+hl('ColorColumn',   { link = 'CursorLine' })
+hl('Conceal',       { link = 'Comment' })
+hl('CursorLine',    { link = 'StatusLine' })
+hl('CursorLineNr',  { link = 'Normal' })
+hl('EndOfBuffer',   { link = 'NonText' })
+hl('ErrorMsg',      { link = 'Error' })
+hl('FloatBorder',   { link = 'NonText' })
+hl('FoldColumn',    { link = 'LineNr' })
+hl('Folded',        { link = 'NonText' })
+hl('LineNr',        { link = 'NonText' })
+hl('ModeMsg',       { link = 'Normal' })
+hl('MoreMsg',       { link = 'Normal' })
+hl('NormalFloat',   { link = 'Normal' })
+hl('Question',      { link = 'Warning' })
+hl('SignColumn',    { link = 'LineNr' })
+hl('TabLine',       { link = 'Normal' })
+hl('TabLineFill',   { link = 'Normal' })
+hl('TabLineSel',    { link = 'Special' })
+hl('VertSplit',     { link = 'NonText' })
+hl('WarningMsg',    { link = 'Warning' })
+hl('Whitespace',    { link = 'NonText' })
+hl('WinSeparator',  { link = 'NonText' })
+hl('NvimInternalError', { link = 'Error' })
 
--- USER INTERFACE
+-- Plugin Specific Links
 
-Group.link('ErrorMsg',      g.Error)
-Group.link('ModeMsg',       g.Normal)
-Group.link('MoreMsg',       g.Normal)
-Group.link('Question',      g.Warning)
-Group.link('WarningMsg',    g.Warning)
+-- diagnostics and git signs
+hl('DiagnosticError',       { link = 'Error' })
+hl('DiagnosticWarn',        { link = 'Warning' })
+hl('DiagnosticHint',        { link = 'Comment' })
+hl('DiagnosticInfo',        { link = 'Comment' })
+hl('DiagnosticOk',          { link = 'String' })
 
-Group.link('Conceal',           g.Comment)
-Group.link('ColorColumn',  g.CursorLine)
-Group.link('CursorLine',   g.StatusLine)
-Group.link('CursorLineNr', g.Normal)
-Group.link('EndOfBuffer',  g.NonText)
-Group.link('FoldColumn',   g.LineNr)
-Group.link('Folded',       g.NonText)
-Group.link('LineNr',       g.NonText)
-Group.link('SignColumn',   g.LineNr)
-Group.link('VertSplit',    g.NonText)
-Group.link('Whitespace',   g.NonText)
-Group.link('WinSeparator', g.NonText)
+hl('GitSignsAdd',           { link = 'NonText' })
+hl('GitSignsChange',        { link = 'NonText' })
+hl('GitSignsDelete',        { link = 'NonText' })
 
-Group.link('NormalFloat',  g.Normal)
-Group.link('TabLine',      g.Normal)
-Group.link('TabLineFill',  g.Normal)
-Group.link('TabLineSel',   g.Special)
+-- aerial
+hl('AerialInterfaceIcon',   { link = 'User2' })
+hl('AerialLine',            { link = 'Special' })
+hl('AerialStructIcon',      { link = 'User1' })
 
-Group.link('NvimInternalError', g.Error)
-Group.link('FloatBorder',  g.NonText)
+-- mini.diff
+hl('MiniDiffSignAdd',       { link = 'NonText' })
+hl('MiniDiffSignChange',    { link = 'NonText' })
+hl('MiniDiffSignDelete',    { link = 'NonText' })
 
--- PLUGIN SPECIFIC
+-- nvim-tree
+hl('NvimTreeExecFile',      { link = 'User1' })
+hl('NvimTreeGitDeleted',    { link = 'Noise' })
+hl('NvimTreeGitDirty',      { link = 'Noise' })
+hl('NvimTreeGitIgnored',    { link = 'Noise' })
+hl('NvimTreeGitMerge',      { link = 'Warning' })
+hl('NvimTreeGitNew',        { link = 'Noise' })
+hl('NvimTreeGitRenamed',    { link = 'Noise' })
+hl('NvimTreeGitStaged',     { link = 'Noise' })
+hl('NvimTreeImageFile',     { link = 'Noise' })
+hl('NvimTreeIndentMarker',  { link = 'String' })
+hl('NvimTreeRootFolder',    { link = 'Noise' })
+hl('NvimTreeSpecialFile',   { link = 'Noise' })
+hl('NvimTreeSymlink',       { link = 'User2' })
+hl('NvimTreeWindowPicker',  { link = 'PmenuThumb' })
 
-if vim.g.cactusbuddy_express_line_enabled then
-  require 'statusline'
-end
-
-Group.new('DiagnosticUnderlineError', c.none, c.none, s.underline, c.red)
-Group.new('DiagnosticUnderlineWarn',  c.none, c.none, s.underline, c.orange)
-Group.new('DiagnosticUnderlineHint',  c.none, c.none, s.underline)
-Group.new('DiagnosticUnderlineInfo',  c.none, c.none, s.underline)
-
-Group.link('DiagnosticError',       g.Error)
-Group.link('DiagnosticWarn',        g.Warning)
-Group.link('DiagnosticHint',        g.Comment)
-Group.link('DiagnosticInfo',        g.Comment)
-Group.link('DiagnosticOk',          g.String)
-
-Group.link('GitSignsAdd',           g.NonText)
-Group.link('GitSignsChange',        g.NonText)
-Group.link('GitSignsDelete',        g.NonText)
-
-Group.link('NvimTreeExecFile',      g.User1)
-Group.link('NvimTreeGitDeleted',    g.Noise)
-Group.link('NvimTreeGitDirty',      g.Noise)
-Group.link('NvimTreeGitIgnored',    g.Noise)
-Group.link('NvimTreeGitMerge',      g.Warning)
-Group.link('NvimTreeGitNew',        g.Noise)
-Group.link('NvimTreeGitRenamed',    g.Noise)
-Group.link('NvimTreeGitStaged',     g.Noise)
-Group.link('NvimTreeImageFile',     g.Noise)
-Group.link('NvimTreeIndentMarker',  g.String)
-Group.link('NvimTreeRootFolder',    g.Noise)
-Group.link('NvimTreeSpecialFile',   g.Noise)
-Group.link('NvimTreeSymlink',       g.User2)
-Group.link('NvimTreeWindowPicker',  g.PmenuThumb)
-
-Group.link('TelescopeBorder',       g.Noise)
-Group.link('TelescopeMatching',     g.User1)
-Group.link('TelescopePromptCounter', g.Noise)
-
-Group.link('AerialInterfaceIcon',   g.User2)
-Group.link('AerialLine',            g.Special)
-Group.link('AerialStructIcon',      g.User1)
+-- telescope
+hl('TelescopeBorder',       { link = 'Noise' })
+hl('TelescopeMatching',     { link = 'User1' })
+hl('TelescopePromptCounter', { link = 'Noise' })

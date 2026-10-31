@@ -1,8 +1,8 @@
 # Cactusbuddy
 
-A plain succulent 256-color theme using [colorbuddy].
+A plain succulent 256-color theme using [mini.base16].
 
-[colorbuddy]: https://github.com/tjdevries/colorbuddy.nvim
+[mini.base16]: https://github.com/echasnovski/mini.base16
 
 ## Screenshots
 
@@ -24,27 +24,52 @@ Tig configuration for the theme can be found in [the gist][tigrc].
 
 ## Installation
 
+### Using [lazy.nvim](https://github.com/folke/lazy.nvim)
+
+```lua
+{
+  'redbug312/cactusbuddy',
+  lazy = false,
+  priority = 1000,
+  dependencies = {
+    'echasnovski/mini.base16',
+    'echasnovski/mini.statusline', -- Optional: if you want statusline support
+  },
+  config = function()
+    vim.cmd('colorscheme cactusbuddy')
+  end,
+}
+```
+
+### Using [packer.nvim](https://github.com/wbthomason/packer.nvim)
+
+```lua
+use {
+  'redbug312/cactusbuddy',
+  requires = {
+    'echasnovski/mini.base16',
+    'echasnovski/mini.statusline', -- Optional: if you want statusline support
+  },
+  config = function()
+    vim.cmd('colorscheme cactusbuddy')
+  end,
+}
+```
+
+### Using [vim-plug](https://github.com/junegunn/vim-plug)
+
 ```vim
-" Using vim-plug
-Plug 'tjdevries/colorbuddy.vim'
+Plug 'echasnovski/mini.base16'
+Plug 'echasnovski/mini.statusline' " Optional: if you want statusline support
 Plug 'redbug312/cactusbuddy'
-lua require('colorbuddy').colorscheme('cactusbuddy')
+
+" After plug#end()
+colorscheme cactusbuddy
 ```
 
-```lua
--- Using packer
-use { 'redbug312/cactusbuddy', requires = 'tjdevries/colorbuddy.vim' }
-require('colorbuddy').colorscheme('cactusbuddy')
-```
+## Use with [mini.statusline]
 
-## Use with [express_line]
+[mini.statusline]: https://github.com/echasnovski/mini.statusline
 
-[express_line]: https://github.com/tjdevries/express_line.nvim
+To get the statusline shown in the screenshots, make sure `mini.statusline` is installed. It will be configured and initialized automatically when the colorscheme is loaded.
 
-Enable the statusline settings in screenshots.
-
-```lua
-use { 'tjdevries/express_line.nvim', requires = 'nvim-lua/plenary.nvim' }
-vim.g.cactusbuddy_express_line_enabled = true
-require('colorbuddy').colorscheme('cactusbuddy')
-```

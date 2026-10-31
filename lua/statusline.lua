@@ -1,138 +1,151 @@
-local builtin = require('el.builtin')
-local extensions = require('el.extensions')
-local sections = require('el.sections')
-local subscribe = require('el.subscribe')
-
-local function show_current_mode(window, buffer)
-  local mode = extensions.mode(window, buffer)
-  local text = window.is_active and mode:upper() or ''
-  return text
+local has_statusline, statusline = pcall(require, "mini.statusline")
+if not has_statusline or vim.g.cactusbuddy_statusline_enabled == false then
+  return
 end
 
-local function show_diagnostics(_, buffer)
-  local diag = vim.diagnostic
-  local enabled = next(vim.lsp.buf_get_clients(0)) ~= nil
-  if not enabled then
-    return ''
+local palette = require('palette')
+
+local hl = function(group, opts)
+  vim.api.nvim_set_hl(0, group, opts)
+end
+
+-- Setup mode highlight groups
+hl('MiniStatuslineModeNormal',  { fg = palette.base07, bg = palette.base01, bold = true })
+hl('MiniStatuslineModeInsert',  { fg = palette.base0C, bg = palette.base01, bold = true })
+hl('MiniStatuslineModeVisual',  { fg = palette.base0E, bg = palette.base01, bold = true })
+hl('MiniStatuslineModeReplace', { fg = palette.base08, bg = palette.base01, bold = true })
+hl('MiniStatuslineModeCommand', { fg = palette.base06, bg = palette.base01, bold = true })
+hl('MiniStatuslineModeOther',   { fg = palette.base0D, bg = palette.base01, bold = true })
+
+-- Diagnostic highlights
+hl('MiniStatuslineDiagnosticError', { fg = palette.base08, bg = palette.base01 })
+hl('MiniStatuslineDiagnosticWarning', { fg = palette.base09, bg = palette.base01 })
+hl('MiniStatuslineDiagnosticInfo', { fg = palette.base06, bg = palette.base01 })
+hl('MiniStatuslineDiagnosticHint', { fg = palette.base05, bg = palette.base01 })
+
+-- General highlights
+hl('MiniStatuslineFilename', { fg = palette.base07, bg = palette.base01 })
+hl('MiniStatuslineFileinfo', { fg = palette.base06, bg = palette.base01 })
+hl('MiniStatuslineInactive', { fg = palette.base04, bg = palette.base01 })
+
+local function section_paste()
+  return vim.o.paste and 'PASTE' or ''
+end
+
+local function section_git()
+  local branch = vim.b.gitsigns_head or (vim.b.minidiff_summary and vim.b.minidiff_summary.source and vim.b.minidiff_summary.source.name)
+  if not branch or branch == '' then return '' end
+  return ' ' .. branch .. ' '
+end
+
+local function section_fileinfo()
+  local filetype = vim.bo.filetype
+  if filetype == '' then
+    filetype = 'NO FT'
   end
-  local counts = {
-    error = #diag.get(buffer.bufnr, { severity = diag.severity.ERROR }),
-    warn  = #diag.get(buffer.bufnr, { severity = diag.severity.WARN }),
-    info  = #diag.get(buffer.bufnr, { severity = diag.severity.INFO }),
-  }
-  local texts = {
-    counts.error ~= 0 and string.format('%%#%s# %s%%*', 'ElError', counts.error) or '',
-    counts.warn  ~= 0 and string.format('%%#%s# %s%%*', 'ElWarning', counts.warn) or '',
-    counts.info  ~= 0 and string.format('%%#%s# %s%%*', 'ElInformation', counts.info) or '',
-  }
-  local text = table.concat(texts, ' ')
-  return text
-end
 
-local function show_git_branch(window, buffer)
-  local branch = extensions.git_branch(window, buffer)
-  local text = branch and ' '..branch..'  '
-  return text
-end
+  local has_lsp = false
+  for _, client in ipairs(vim.lsp.get_clients({ bufnr = 0 })) do
+    if client.initialized then
+      has_lsp = true
+      break
+    end
+  end
+  local plugin_flag = has_lsp and '+' or ''
 
-local function show_enabled_plugins(_, buffer)
-  local enabled = {
-    treesitter = pcall(vim.treesitter.get_parser, buffer.bufnr),
-    lsp = next(vim.lsp.buf_get_clients(buffer.bufnr)) ~= nil,
-  }
-  local flag = enabled.lsp and '+' or
-    enabled.treesitter and '' or '-'
-  return flag
-end
-
-local function warn_other_fileformat()
   local format = vim.bo.fileformat
-  local warn = format ~= 'unix' and ' ['..format..']' or ''
-  return warn
+  local format_warn = format ~= 'unix' and ' [' .. format .. ']' or ''
+
+  return string.format('%s%s%s', filetype, plugin_flag, format_warn)
 end
 
-local function warn_paste_mode(window, _)
-  local enabled = vim.o.paste
-  local warn = (window.is_active and enabled) and ' PASTE' or ''
-  return warn
+local function section_percentage()
+  local current_line = vim.fn.line('.')
+  local total_lines = vim.fn.line('$')
+  if current_line == 1 then
+    return 'Top'
+  elseif current_line == total_lines then
+    return 'Bot'
+  else
+    return string.format('%2d%%%%', math.floor(current_line / total_lines * 100))
+  end
 end
 
-local generator = function()
-  local segments = {}
-  table.insert(segments, show_current_mode)
-  table.insert(segments, warn_paste_mode)
-  table.insert(segments, ' ')
-  table.insert(segments, sections.highlight('StatusLine', builtin.tail_file))
-  table.insert(segments, ' ')
-  table.insert(segments, sections.highlight('StatusLine', builtin.modified_flag))
-  table.insert(segments, ' ')
-  table.insert(segments, show_diagnostics)
-  table.insert(segments, sections.split)
-  table.insert(segments,
-    subscribe.buf_autocmd('el_git_branch', 'BufEnter', show_git_branch)
-  )
-  table.insert(segments, builtin.filetype_list)
-  table.insert(segments, show_enabled_plugins)
-  table.insert(segments, warn_other_fileformat)
-  table.insert(segments, '  ')
-  table.insert(segments, builtin.percentage_through_file)
-  table.insert(segments, '%%')
-  return segments
+-- Custom section_filename to display path
+statusline.section_filename = function(args)
+  if vim.bo.buftype == 'terminal' then
+    return '%t'
+  elseif statusline.is_truncated(args.trunc_width) then
+    return '%f'
+  else
+    return '%F'
+  end
 end
 
-require('el').setup { generator = generator }
-
--- MODE COLORS
-
-local palette = {
-  white   = { gui='#B2B2B2', cterm=249 },
-  grey    = { gui='#949494', cterm=246 },
-  dark    = { gui='#767676', cterm=243 },
-  darker  = { gui='#626262', cterm=241 },
-  darkest = { gui='#4E4E4E', cterm=238 },
-  base    = { gui='#262626', cterm=235 },
-  black   = { gui='#1C1C1C', cterm=234 },
-  backgnd = { gui='#121212', cterm=233 },
-
-  cactus  = { gui='#5F875F', cterm=065 }, -- darkgreen
-  grass   = { gui='#87AF87', cterm=108 }, -- limegreen
-  fruit   = { gui='#D787AF', cterm=175 }, -- coralpink
-  brick   = { gui='#875F5F', cterm=095 }, -- brickpink
-  purple  = { gui='#8787AF', cterm=103 },
-  cyan    = { gui='#87AFD7', cterm=110 },
-  red     = { gui='#D75F5F', cterm=167 },
-  orange  = { gui='#D7875F', cterm=173 },
-  brown   = { gui='#AF875F', cterm=137 },
-  blue    = { gui='#5F87AF', cterm=067 },
-}
-
-local highlights = {
-  ElCommand               = palette.grey,
-  ElCommandCV             = palette.grey,
-  ElCommandEx             = palette.grey,
-  ElConfirm               = palette.grey,
-  ElInsertCompletion      = palette.grass,
-  ElInsert                = palette.grass,
-  ElMore                  = palette.grey,
-  ElNormal                = palette.white,
-  ElNormalOperatorPending = palette.white,
-  ElPrompt                = palette.grey,
-  ElReplace               = palette.red,
-  ElSBlock                = palette.brown,
-  ElSelect                = palette.brown,
-  ElShell                 = palette.blue,
-  ElSLine                 = palette.brown,
-  ElTerm                  = palette.blue,
-  ElVirtualReplace        = palette.purple,
-  ElVisualBlock           = palette.purple,
-  ElVisualLine            = palette.purple,
-  ElVisual                = palette.purple,
-
-  ElError                 = palette.red,
-  ElWarning               = palette.orange,
-  ElInformation           = palette.grey,
-}
-
-for group, color in pairs(highlights) do
-  vim.cmd('hi '..group..' guifg='..color.gui..' guibg='..palette.black.gui)
+-- Custom section_modified to display modified/readonly flags
+statusline.section_modified = function(args)
+  return '%{%&modified ? " [+]" : ""%}%{%&readonly ? " [RO]" : ""%}'
 end
+
+statusline.section_diagnostics = function(args)
+  if statusline.is_truncated(args and args.trunc_width) then return '' end
+  local err_count = #vim.diagnostic.get(0, { severity = vim.diagnostic.severity.ERROR })
+  local warn_count = #vim.diagnostic.get(0, { severity = vim.diagnostic.severity.WARN })
+  local other_count = #vim.diagnostic.get(0, { severity = vim.diagnostic.severity.INFO })
+                    + #vim.diagnostic.get(0, { severity = vim.diagnostic.severity.HINT })
+
+  local parts = {}
+  if err_count > 0 then
+    table.insert(parts, string.format("%%#MiniStatuslineDiagnosticError# %d", err_count))
+  end
+  if warn_count > 0 then
+    table.insert(parts, string.format("%%#MiniStatuslineDiagnosticWarning# %d", warn_count))
+  end
+  if other_count > 0 then
+    table.insert(parts, string.format("%%#MiniStatuslineDiagnosticInfo# %d", other_count))
+  end
+
+  if #parts == 0 then return '' end
+  return table.concat(parts, '  ')
+end
+
+statusline.setup({
+  use_icons = false,
+  content = {
+    active = function()
+      if vim.bo.filetype == 'TelescopePrompt' then
+        return ' '
+      end
+
+      local mode, mode_hl = statusline.section_mode({ trunc_width = 120 })
+      local paste = section_paste()
+      local git = section_git()
+      local filename = statusline.section_filename({ trunc_width = 140 })
+      local modified = statusline.section_modified({ trunc_width = 140 })
+      local diagnostics = statusline.section_diagnostics({ trunc_width = 75 })
+      local fileinfo = section_fileinfo()
+      local percentage = section_percentage()
+
+      return statusline.combine_groups({
+        { hl = mode_hl,                  strings = { mode:upper() } },
+        { hl = 'MiniStatuslineFilename', strings = { paste } },
+        ' ',
+        { hl = 'MiniStatuslineFilename', strings = { filename } },
+        ' ',
+        { hl = 'MiniStatuslineFilename', strings = { modified } },
+        diagnostics,
+        '%=',
+        { hl = 'MiniStatuslineFileinfo', strings = { git } },
+        ' ',
+        { hl = 'MiniStatuslineFileinfo', strings = { fileinfo:upper() } },
+        '  ',
+        { hl = 'MiniStatuslineFileinfo', strings = { percentage } },
+      })
+    end,
+    inactive = function()
+      return statusline.combine_groups({
+        { hl = 'MiniStatuslineInactive', strings = { '%t' } },
+      })
+    end,
+  },
+})
